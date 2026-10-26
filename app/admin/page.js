@@ -1,204 +1,123 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import BrandHeader from '@/components/BrandHeader';
+import ProductCard from '@/components/ProductCard';
+import WelcomePopup from '@/components/WelcomePopup';
 import { useAppState } from '@/components/AppStateProvider';
 
-export default function AdminPage() {
-  const { state, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, updateSettings, updateProduct, addProduct, deleteProduct } = useAppState();
-  const [countryFilter, setCountryFilter] = useState('Tous');
-  const [productForm, setProductForm] = useState({ name: 'Station Total Énergie', amount: 5000, daily: 800, total: 144000, image: '/products/product-5000.svg' });
-
-  const visibleUsers = useMemo(() => {
-    if (countryFilter === 'Tous') return state.users;
-    return state.users.filter((user) => user.country === countryFilter);
-  }, [state.users, countryFilter]);
-
-  const handleAddProduct = (event) => {
-    event.preventDefault();
-    addProduct({
-      id: `p-${Date.now()}`,
-      name: productForm.name,
-      amount: Number(productForm.amount),
-      daily: Number(productForm.daily),
-      total: Number(productForm.total),
-      image: productForm.image,
-    });
-  };
+export default function HomePage() {
+  const { state } = useAppState();
 
   return (
     <>
       <BrandHeader />
-      <main className="container" style={{ paddingTop: 30, paddingBottom: 40 }}>
-        <div className="page-header">
-          <h1>Backoffice Admin</h1>
-          <p>Gestion centrale du système Total Énergie.</p>
-        </div>
+      <WelcomePopup />
 
-        <div className="kpis">
-          <div className="kpi"><small>Déposits en attente</small><strong>{state.depositRequests.filter((d) => d.status === 'en_attente').length}</strong></div>
-          <div className="kpi"><small>Retraits en attente</small><strong>{state.withdrawalRequests.filter((w) => w.status === 'en_attente').length}</strong></div>
-          <div className="kpi"><small>Utilisateurs</small><strong>{state.users.length}</strong></div>
-          <div className="kpi"><small>Produits</small><strong>{state.products.length}</strong></div>
-        </div>
+      <main>
+        <section className="hero">
+          <div className="container hero-grid">
+            <div className="hero-copy">
+              <div className="pill-btn" style={{ display: 'inline-flex', marginBottom: 16 }}>Investissement 180 jours</div>
+              <h1>
+                <span className="gradient-text">Total Énergie</span><br />
+                Investissez intelligemment.
+              </h1>
+              <p>
+                Une plateforme d’investissement sécurisée pensée pour les marchés du Bénin, Cameroun, Côte d’Ivoire,
+                Burkina Faso et Niger, avec rendements quotidiens, suivi administratif et gestion de dépôt/retrait fiable.
+              </p>
+              <div className="hero-actions">
+                <a href="#produits" className="primary-btn">Voir les offres</a>
+                <a href={state.settings.telegramLink} target="_blank" rel="noreferrer" className="ghost-btn">Rejoignez Telegram</a>
+              </div>
 
-        <div className="page-grid">
-          <div className="panel">
-            <h3>DEMANDES EN ATTENTE</h3>
-
-            <div style={{ marginBottom: 16 }}>
-              <strong>Dépôts</strong>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Montant</th>
-                  <th>Numéro</th>
-                  <th>Pays</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {state.depositRequests.filter((d) => d.status === 'en_attente').map((deposit) => (
-                  <tr key={deposit.id}>
-                    <td>{deposit.name}</td>
-                    <td>{deposit.amount.toLocaleString()} FCFA</td>
-                    <td>{deposit.phone}</td>
-                    <td>{deposit.country}</td>
-                    <td>
-                      <div className="inline-actions">
-                        <button className="primary-btn" onClick={() => approveDeposit(deposit.id)}>Approuver</button>
-                        <button className="danger-btn" onClick={() => rejectDeposit(deposit.id)}>Rejeter</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div style={{ margin: '20px 0 12px' }}>
-              <strong>Retraits</strong>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Montant</th>
-                  <th>Réseau</th>
-                  <th>Pays</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {state.withdrawalRequests.filter((w) => w.status === 'en_attente').map((withdrawal) => (
-                  <tr key={withdrawal.id}>
-                    <td>{withdrawal.name}</td>
-                    <td>{withdrawal.amount.toLocaleString()} FCFA</td>
-                    <td>{withdrawal.network}</td>
-                    <td>{withdrawal.country}</td>
-                    <td>
-                      <div className="inline-actions">
-                        <button className="primary-btn" onClick={() => approveWithdrawal(withdrawal.id)}>Approuver</button>
-                        <button className="danger-btn" onClick={() => rejectWithdrawal(withdrawal.id)}>Rejeter</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="panel">
-            <h3>Gestion utilisateurs</h3>
-            <div className="field">
-              <label>Filtrer par pays</label>
-              <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)}>
-                <option>Tous</option>
-                {state.settings.allowedCountries.map((country) => (
-                  <option key={country}>{country}</option>
-                ))}
-              </select>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Pays</th>
-                  <th>Solde</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.country}</td>
-                    <td>{user.balance.toLocaleString()} FCFA</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="page-grid" style={{ marginTop: 6 }}>
-          <div className="panel">
-            <h3>Gestion Produits CRUD</h3>
-            <form onSubmit={handleAddProduct}>
-              <div className="form-grid">
-                <div className="field">
-                  <label>Nom</label>
-                  <input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} />
+              <div className="quick-stats">
+                <div className="stat-card">
+                  <strong>180J</strong>
+                  <span>durée d’investissement</span>
                 </div>
-                <div className="field">
-                  <label>Montant</label>
-                  <input type="number" value={productForm.amount} onChange={(e) => setProductForm({ ...productForm, amount: e.target.value })} />
+                <div className="stat-card">
+                  <strong>5 pays</strong>
+                  <span>pays autorisés</span>
                 </div>
-                <div className="field">
-                  <label>Gain/Jour</label>
-                  <input type="number" value={productForm.daily} onChange={(e) => setProductForm({ ...productForm, daily: e.target.value })} />
-                </div>
-                <div className="field">
-                  <label>Total</label>
-                  <input type="number" value={productForm.total} onChange={(e) => setProductForm({ ...productForm, total: e.target.value })} />
+                <div className="stat-card">
+                  <strong>24h/7</strong>
+                  <span>traitement des demandes</span>
                 </div>
               </div>
-              <button className="primary-btn" type="submit">Ajouter produit</button>
-            </form>
+            </div>
 
-            <div style={{ marginTop: 18 }}>
-              {state.products.map((product) => (
-                <div key={product.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--line)', padding: '12px 0' }}>
-                  <span>{product.amount.toLocaleString()} FCFA</span>
-                  <div className="inline-actions">
-                    <button className="ghost-btn" onClick={() => updateProduct(product.id, { daily: product.daily + 100 })}>Modifier</button>
-                    <button className="danger-btn" onClick={() => deleteProduct(product.id)}>Supprimer</button>
+            <div className="hero-visual">
+              <div className="visual-box">
+                <div className="visual-header">
+                  <span className="visual-balance">Solde disponible</span>
+                  <span className="badge badge-blue">Actif</span>
+                </div>
+                <div className="visual-amount">{state.user.balance.toLocaleString()} FCFA</div>
+
+                <div className="info-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span>Investissement</span>
+                    <strong>{state.user.totalInvested.toLocaleString()} FCFA</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span>Rendements</span>
+                    <strong>{state.user.totalEarned.toLocaleString()} FCFA</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Pays</span>
+                    <strong>{state.user.country}</strong>
                   </div>
                 </div>
+
+                <div className="info-card">
+                  <strong>Rejoignez notre Canal Telegram</strong>
+                  <p style={{ marginBottom: 0, marginTop: 8, color: 'rgba(255,255,255,0.8)' }}>
+                    Suivez les offres et la communication de la marque Total Énergie.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="container">
+            <div className="section-header">
+              <h2>Pourquoi choisir Total Énergie</h2>
+            </div>
+            <div className="grid-3">
+              <div className="feature-card">
+                <div className="icon">⚡</div>
+                <h3>Rendements automatiques</h3>
+                <p>Les gains quotidiens sont calculés proprement pendant 180 jours et versés selon l’horaire d’investissement.</p>
+              </div>
+              <div className="feature-card">
+                <div className="icon">💳</div>
+                <h3>Paiement mobile</h3>
+                <p>Orange Money, Moov Money, MTN Money et Wave sont pris en charge via un lien de paiement sécurisé.</p>
+              </div>
+              <div className="feature-card">
+                <div className="icon">🛡️</div>
+                <h3>Validation admin</h3>
+                <p>Toute demande de dépôt ou retrait est contrôlée manuellement par l’admin avant validation.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="produits">
+          <div className="container">
+            <div className="section-header">
+              <h2>Offres d’investissement</h2>
+            </div>
+            <div className="product-grid">
+              {state.products.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           </div>
-
-          <div className="panel">
-            <h3>Gestion Paiement et Telegram</h3>
-            <div className="field">
-              <label>Lien de paiement</label>
-              <input value={state.settings.paymentLink} onChange={(e) => updateSettings({ paymentLink: e.target.value })} />
-            </div>
-            <div className="field">
-              <label>Lien Telegram</label>
-              <input value={state.settings.telegramLink} onChange={(e) => updateSettings({ telegramLink: e.target.value })} />
-            </div>
-            <div className="field">
-              <label>Lien support</label>
-              <input value={state.settings.supportLink} onChange={(e) => updateSettings({ supportLink: e.target.value })} />
-            </div>
-            <div className="field">
-              <label>Parrainage</label>
-              <input value={`${state.settings.referral.lvl1}% / ${state.settings.referral.lvl2}% / ${state.settings.referral.lvl3}%`} readOnly />
-            </div>
-          </div>
-        </div>
+        </section>
       </main>
     </>
   );

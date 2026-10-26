@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String              @id @default(cuid())
+  name          String
+  email         String              @unique
+  phone         String
+  country       String
+  balance       Int                 @default(0)
+  totalInvested Int                @default(0)
+  totalEarned   Int                 @default(0)
+  isAdmin       Boolean             @default(false)
+  sponsorId     String?
+  sponsor       User?               @relation("UserSponsor", fields: [sponsorId], references: [id])
+  referrals    User[]              @relation("UserSponsor")
+  investments  Investment[]
+  depositRequests DepositRequest[]
+  withdrawalRequests WithdrawalRequest[]
+  notifications Notification[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model Product {
+  id        String       @id @default(cuid())
+  name      String
+  amount    Int
+  daily     Int
+  total     Int
+  imageUrl  String
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model Investment {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  productId   String
+  amount      Int
+  dailyReturn Int
+  totalReturn Int
+  startAt     DateTime
+  endAt       DateTime
+  status      String    @default("active")
+  lastPaidAt  DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model DepositRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int
+  network   String
+  phone     String
+  country   String
+  proofUrl  String?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+model WithdrawalRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int
+  network   String
+  phone     String
+  country   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id               String @id @default(cuid())
+  paymentLink      String
+  telegramLink     String
+  supportLink      String
+  popupTitle       String
+  referralLevel1   Int
+  referralLevel2   Int
+  referralLevel3   Int
+  minWithdrawal    Int
+  payoutFee        Int
+  dailyDuration    Int
+  allowedCountries String
+}

@@ -1,42 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useAppState } from '@/components/AppStateProvider';
 
-const POPUP_KEY = 'total-energie-popup-seen';
-
-export default function WelcomePopup() {
-  const { state } = useAppState();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const seen = localStorage.getItem(POPUP_KEY);
-    if (!seen) {
-      setOpen(true);
-    }
-  }, []);
-
-  const close = () => {
-    localStorage.setItem(POPUP_KEY, '1');
-    setOpen(false);
-  };
-
-  if (!open) return null;
+export default function ProductCard({ product }) {
+  const { addInvestment } = useAppState();
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal">
-        <h3>{state.settings.popupTitle}</h3>
-        <ul>
-          <li>Inscrivez-vous maintenant et recevez 500 FCFA gratuitement.</li>
-          <li>Invitez vos amis à investir et gagnez 25% / 3% / 2% sur 3 niveaux.</li>
-          <li>Les rendements sont versés automatiquement chaque jour pendant 180 jours.</li>
-          <li>Investissez dès 2 000 FCFA et commencez à gagner dès le lendemain.</li>
-        </ul>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
-          <button className="primary-btn" onClick={close}>D'accord</button>
-          <a href={state.settings.supportLink} target="_blank" rel="noreferrer" className="primary-btn" style={{ background: '#0d7af7' }}>Telegram</a>
+    <div className="product-card">
+      <div className="product-visual">
+        <Image src={product.image} alt={product.name} width={480} height={180} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+      </div>
+      <div className="product-content">
+        <h3 className="product-name">{product.name}</h3>
+        <div className="product-meta">
+          <span>Investissement</span>
+          <span>{product.amount.toLocaleString()} FCFA</span>
         </div>
+        <div className="product-price">
+          <div>
+            <small className="muted">Gain/Jour</small>
+            <strong>{product.daily.toLocaleString()} FCFA</strong>
+          </div>
+          <div>
+            <small className="muted">Total</small>
+            <strong>{product.total.toLocaleString()} FCFA</strong>
+          </div>
+        </div>
+        <button className="primary-btn" style={{ width: '100%' }} onClick={() => addInvestment(product)}>Investir</button>
       </div>
     </div>
   );

@@ -1,34 +1,33 @@
 'use client';
 
-import Image from 'next/image';
+import Link from 'next/link';
 import { useAppState } from '@/components/AppStateProvider';
 
-export default function ProductCard({ product }) {
-  const { addInvestment } = useAppState();
+export default function BrandHeader() {
+  const { state } = useAppState();
 
   return (
-    <div className="product-card">
-      <div className="product-visual">
-        <Image src={product.image} alt={product.name} width={480} height={180} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-      </div>
-      <div className="product-content">
-        <h3 className="product-name">{product.name}</h3>
-        <div className="product-meta">
-          <span>Investissement</span>
-          <span>{product.amount.toLocaleString()} FCFA</span>
+    <header className="topbar">
+      <div className="container topbar-inner">
+        <Link href="/" className="brand" aria-label="Accueil Total Énergie">
+          <span className="brand-mark">T</span>
+          <span className="brand-text">Total Énergie</span>
+        </Link>
+
+        <nav className="nav">
+          <Link href="/">Accueil</Link>
+          <Link href="/dashboard">Tableau de bord</Link>
+          <Link href="/investissements">Investissements</Link>
+          <Link href="/depot">Dépôt / Recharger</Link>
+          <Link href="/moi">Moi</Link>
+          <Link href="/admin">Admin</Link>
+        </nav>
+
+        <div className="header-actions">
+          <a href={state.settings.supportLink} target="_blank" rel="noreferrer" className="pill-btn">Support</a>
+          <a href={state.settings.telegramLink} target="_blank" rel="noreferrer" className="primary-btn">Telegram</a>
         </div>
-        <div className="product-price">
-          <div>
-            <small className="muted">Gain/Jour</small>
-            <strong>{product.daily.toLocaleString()} FCFA</strong>
-          </div>
-          <div>
-            <small className="muted">Total</small>
-            <strong>{product.total.toLocaleString()} FCFA</strong>
-          </div>
-        </div>
-        <button className="primary-btn" style={{ width: '100%' }} onClick={() => addInvestment(product)}>Investir</button>
       </div>
-    </div>
+    </header>
   );
 }
